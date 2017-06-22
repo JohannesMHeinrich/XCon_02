@@ -1558,8 +1558,11 @@ class window(Ui_XCon):
 
 
         ### 313 COOLING LASER CHANGE #######################################################################
+        self.label_laser_313_frequency.setText(str("{0:.6f}".format(the_program.laser_313_frequency)))
+        self.label_laser_313_wavelength.setText(str("{0:.6f}".format(float(the_program.laser_313_wavelength))))
+        
         self.label_laser_313_aom_voltage.setText(str("{0:.2f}".format(the_program.laser_313_aom_voltage)))
-        self.label_laser_313_piezo_voltage.setText(str("{0:.2f}".format(the_program.laser_313_piezo_voltage_measured)))
+        self.label_laser_313_piezo_voltage.setText(str("{0:.2f}".format(float(the_program.laser_313_piezo_voltage_measured))))
         #~~ COOLING LASER CHANGE AOM plots ~~~~~~~~~~~#
         x_values_fiber_aom_time = [0]
         y_values_fiber_aom_volts = []

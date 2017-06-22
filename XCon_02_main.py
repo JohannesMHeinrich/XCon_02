@@ -15,30 +15,25 @@ import glob, os # --------------------------------------------------------------
 import csv
 
 ### UNCOMMENT BELOW for EXPERIMENT computer ###########################################
-#from library.instr_AgilentTech_Oscilloscope_DSO1024A import oscilloscope_rf #------------------ class for the AgilentTech Oscilloscope DSO1024A
-##from library.instr_HighFinesseWM_WS07 import
-#from library.instr_iXon_Ultra_Camera import iXon_Ultra_camera #-------------------------------- class for the ANDOR camera 
-#from library.instr_Keithley_Power_Supply_2231A_30_3 import oven_power_supply # ---------------- class for the Keithley power supply for the oven current
-#from library.instr_National_Instruments_PCI6010 import AnalogInput #------------------------------------------ class for the DAC 6010 - not used at the moment
-#from library.instr_National_Instruments_PCI6703 import VoltUpdate #------------------------------------------ class for the DAC 6703 from NI
-#from library.instr_Red_Pitaya import scpi #----------------------------------------------------- class for the red pitaya
-#from library.instr_SPC_ion_pump import ion_pump_SPC #------------------------------------------ class for the ion pump
-#from library.instr_Thorlabs_piezo_controller import piezo_fiber_laser # ------------------------------- class for the thorlabs piezo of the fiber laser
+from library.instr_AgilentTech_Oscilloscope_DSO1024A import oscilloscope_rf #------------------ class for the AgilentTech Oscilloscope DSO1024A
+from library.instr_HighFinesseWM_WS07 import HighFinesse_WM #---------------------------------- class for the HighFinesse Wavemeter
+from library.instr_iXon_Ultra_Camera import iXon_Ultra_camera #-------------------------------- class for the ANDOR camera 
+from library.instr_Keithley_Power_Supply_2231A_30_3 import oven_power_supply # ---------------- class for the Keithley power supply for the oven current
+from library.instr_National_Instruments_PCI6010 import AnalogInput #--------------------------- class for the DAC 6010 - not used at the moment
+from library.instr_National_Instruments_PCI6703 import VoltUpdate #---------------------------- class for the DAC 6703 from NI
+from library.instr_Red_Pitaya import scpi #---------------------------------------------------- class for the red pitaya
+from library.instr_SPC_ion_pump import ion_pump_SPC #------------------------------------------ class for the ion pump
+from library.instr_Thorlabs_piezo_controller import piezo_fiber_laser # ----------------------- class for the thorlabs piezo of the fiber laser
 
 ### UNCOMMENT BELOW for HOME computer with DUMMY CLASSES ###############################
-
-from library.d_instr_AgilentTech_Oscilloscope_DSO1024A import oscilloscope_rf #------------ DUMMY class for the AgilentTech Oscilloscope DSO1024A
-from library.d_instr_iXon_Ultra_Camera import iXon_Ultra_camera #-------------------------- DUMMY class for the ANDOR camera
-from library.d_instr_Keithley_Power_Supply_2231A_30_3 import oven_power_supply # ---------------- class for the Keithley power supply for the oven current
-from library.d_instr_National_Instruments_PCI6010 import AnalogInput #------------------------------------ DUMMY class for the DAC 6010 - not used at the moment
-from library.d_instr_National_Instruments_PCI6703 import VoltUpdate #------------------------------------ DUMMY class for the DAC 6703 from NI
-from library.d_instr_Red_Pitaya import scpi #----------------------------------------------- DUMMY class for the red pitaya
-from library.d_instr_SPC_ion_pump import ion_pump_SPC #------------------------------------ DUMMY class for the ion pump
-from library.d_instr_Thorlabs_piezo_controller import piezo_fiber_laser # ------------------------------- class for the thorlabs piezo of the fiber laser
-
-
-#from time import localtime, strftime
-#from function_answer_emails import start_email_bot
+#from library.d_instr_AgilentTech_Oscilloscope_DSO1024A import oscilloscope_rf #---------------- DUMMY class for the AgilentTech Oscilloscope DSO1024A
+#from library.d_instr_iXon_Ultra_Camera import iXon_Ultra_camera #------------------------------ DUMMY class for the ANDOR camera
+#from library.d_instr_Keithley_Power_Supply_2231A_30_3 import oven_power_supply # -------------- DUMMY class for the Keithley power supply for the oven current
+#from library.d_instr_National_Instruments_PCI6010 import AnalogInput #------------------------- DUMMY class for the DAC 6010 - not used at the moment
+#from library.d_instr_National_Instruments_PCI6703 import VoltUpdate #-------------------------- DUMMY class for the DAC 6703 from NI
+#from library.d_instr_Red_Pitaya import scpi #-------------------------------------------------- DUMMY class for the red pitaya
+#from library.d_instr_SPC_ion_pump import ion_pump_SPC #---------------------------------------- DUMMY class for the ion pump
+#from library.d_instr_Thorlabs_piezo_controller import piezo_fiber_laser # --------------------- DUMMY class for the thorlabs piezo of the fiber laser
 
 
 path_to_data = 'data\\'
@@ -210,6 +205,12 @@ class c_program:
 
 
         #---------------- 313 LASER PARAMETERS -------------------------------------------------------------#
+        self.laser_313_frequency = 0.0 # --------------------------- measured value of the wm
+
+        self.laser_313_wavelength = 0.0 # -------------------------- measured value of the wm
+
+        self.wm_temp = 0.0 # --------------------------------------- measured value of the wm
+
         self.laser_313_aom_voltage = 0.0 # ------------------------- to change the aom voltage
         
         self.laser_313_aom_ttl = 0.0 # ----------------------------- to change the aom voltage
@@ -291,13 +292,21 @@ class c_program:
         self.ion_pump = ion_pump_SPC()
         #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
-#        self.simion = simion_analysis()
-        # create instance of email bot
-#        self.emailbot = e_mail()
         
+        #++ start the oven power supply +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++# 
         self.oven_supply = oven_power_supply()
+        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
         
+        
+        #++ start the piezo fiber laser +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++# 
         self.fiber_piezo = piezo_fiber_laser()
+        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+        
+        
+        #++ start the piezo fiber laser +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++# 
+        self.wavemeter = HighFinesse_WM()
+        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
 
 
 
@@ -318,6 +327,12 @@ class c_program:
 
         #++ scheduled job for the update of the piezo voltage +++++++++++++++++++++++++++++++++++++++++++++#          
         program_scheduler.add_job(self.apply_313_piezo_get_voltage, 'interval', seconds=0.5, id='update_piezo_voltage_id')
+
+        #++ scheduled job for the update of the wavelength and frequency ++++++++++++++++++++++++++++++++++#          
+        program_scheduler.add_job(self.get_313_wavelength, 'interval', seconds=0.1, id='update_wm_wl_id')
+        
+        #++ scheduled job for the update of the wavelength and frequency ++++++++++++++++++++++++++++++++++#          
+        program_scheduler.add_job(self.get_313_frequency, 'interval', seconds=0.1, id='update_wm_fr_id')
 
         #++ scheduled job for the complete monitoring +++++++++++++++++++++++++++++++++++++++++++++++++++++# 
         program_scheduler.add_job(self.time_monitoring_up, 'interval', seconds=2, id='time_monitoring_up_id')
@@ -1081,6 +1096,23 @@ class c_program:
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#        
     #~~ 313 LASER TAB ~ 313 LASER TAB ~ 313 LASER TAB ~ 313 LASER TAB ~ 313 LASER TAB ~~~~~~~~~~~~~#
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+    #~~ function to get wavelength from the WM ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#  
+    def get_313_wavelength(self): 
+        self.laser_313_wavelength = self.wavemeter.get_wavelength()                    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+    #~~ function to get frequency from the WM ~~~~~~~~~~~~~~~~~\~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#  
+    def get_313_frequency(self): 
+        self.laser_313_frequency = self.wavemeter.get_frequency()                    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        
+    #~~ function to get wavelength from the WM ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#  
+    def get_313_temp(self): 
+        self.wm_temp = self.wavemeter.get_temperature()                    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#        
+        
+
 
     #~~ function to aom voltage ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#  
     def apply_313_aom_set_voltage(self,voltage):       
