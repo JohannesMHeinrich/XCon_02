@@ -1207,7 +1207,7 @@ class c_program:
 
 
 
-
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     def lock_313_f(self):
         
         while self.breaker_313_lock == 0: 
@@ -1215,63 +1215,24 @@ class c_program:
             frequency_now = float(self.laser_313_frequency)
             frequency_target = float(self.laser_313_frequency_target)
            
-            
-            
             alpha = float(self.laser_313_lock_alpha)
             beta = float(self.laser_313_lock_beta)
             
-            
-            
             frequency_error = (frequency_now-frequency_target)
-            
-            print(frequency_error)
-            
+                        
             prop_corr = 1000*alpha*frequency_error
             
-            print(prop_corr)
-            
-        
+
             self.I_n += 100*beta*frequency_error
             
             int_corr = self.I_n
             
-            print(int_corr)
-            
             corr = prop_corr + int_corr
-            
-            print('corr='+ str(corr))
-            
-#            self.apply_313_piezo_get_voltage()
-#            
-#            volt_now = float(self.laser_313_piezo_voltage_measured)
-            
-            
-            
-#            volt_new = volt_now 
             
             time.sleep(0.1)
             
             self.apply_313_piezo_set_voltage(corr)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 
 
