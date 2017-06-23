@@ -33,6 +33,9 @@ class HighFinesse_WM():
 #        
 #        print(control_show)
 
+
+
+
         
     def get_frequency(self):
 
@@ -40,8 +43,6 @@ class HighFinesse_WM():
         
         frequency = c_double()
         frequency = dll_HF.GetFrequency(frequency)
-   
-        print(frequency)
 
         return frequency
 

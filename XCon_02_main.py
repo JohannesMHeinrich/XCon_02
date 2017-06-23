@@ -205,11 +205,24 @@ class c_program:
 
 
         #---------------- 313 LASER PARAMETERS -------------------------------------------------------------#
+        self.laser_313_time = []
+        self.laser_313_time_diff = []
         self.laser_313_frequency = 0.0 # --------------------------- measured value of the wm
-
+        
+        self.laser_313_wavelength_target = 0.0        
+        self.laser_313_lock_alpha = 0.0
+        self.laser_313_lock_beta = 0.0
+        self.breaker_313_lock = 0
+        self.I_n = 0.0
+        
+        self.laser_313_frequency_monitoring = []
         self.laser_313_wavelength = 0.0 # -------------------------- measured value of the wm
+        self.laser_313_wavelength_monitoring = []
 
         self.wm_temp = 0.0 # --------------------------------------- measured value of the wm
+
+
+
 
         self.laser_313_aom_voltage = 0.0 # ------------------------- to change the aom voltage
         
@@ -329,10 +342,7 @@ class c_program:
         program_scheduler.add_job(self.apply_313_piezo_get_voltage, 'interval', seconds=0.5, id='update_piezo_voltage_id')
 
         #++ scheduled job for the update of the wavelength and frequency ++++++++++++++++++++++++++++++++++#          
-        program_scheduler.add_job(self.get_313_wavelength, 'interval', seconds=0.1, id='update_wm_wl_id')
-        
-        #++ scheduled job for the update of the wavelength and frequency ++++++++++++++++++++++++++++++++++#          
-        program_scheduler.add_job(self.get_313_frequency, 'interval', seconds=0.1, id='update_wm_fr_id')
+        program_scheduler.add_job(self.get_wm_data, 'interval', seconds=0.1, id='update_wm_data_id')
 
         #++ scheduled job for the complete monitoring +++++++++++++++++++++++++++++++++++++++++++++++++++++# 
         program_scheduler.add_job(self.time_monitoring_up, 'interval', seconds=2, id='time_monitoring_up_id')
@@ -1111,6 +1121,164 @@ class c_program:
     def get_313_temp(self): 
         self.wm_temp = self.wavemeter.get_temperature()                    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#        
+
+    #~~ function to monitor the wm ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#  
+    def get_wm_data(self):
+
+        tmp_time = [int(strftime("%Y", localtime())),int(strftime("%m", localtime())),int(strftime("%d", localtime())),int(strftime("%H", localtime())),int(strftime("%M", localtime())),int(strftime("%S", localtime()))]
+        
+        self.get_313_frequency()
+        self.get_313_wavelength()
+        self.get_313_temp()
+               
+        self.laser_313_time.append(tmp_time)
+        self.laser_313_frequency_monitoring.append(self.laser_313_frequency)
+        self.laser_313_wavelength_monitoring.append(self.laser_313_wavelength)
+        
+        
+        if len(self.laser_313_time) < self.m_time_duration:
+            pass
+        else:
+            self.laser_313_time = self.laser_313_time[-self.m_time_duration:]
+            self.laser_313_frequency_monitoring = self.laser_313_frequency_monitoring[-self.m_time_duration:]
+            self.laser_313_wavelength_monitoring = self.laser_313_wavelength_monitoring[-self.m_time_duration:]
+            
+            
+        
+        self.laser_313_time_diff = []
+        
+        for i in range(len(self.laser_313_time)):
+            dt = datetime.datetime(int(self.laser_313_time[i][0]), int(self.laser_313_time[i][1]),int(self.laser_313_time[i][2]), int(self.laser_313_time[i][3]), int(self.laser_313_time[i][4]),int(self.laser_313_time[i][5]))
+            
+            timestamp = (dt - datetime.datetime.now()).total_seconds()
+            self.laser_313_time_diff.append(timestamp)                  
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+    #~~ function to monitor the wm ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#  
+    def lock_313(self):
+        
+        while self.breaker_313_lock == 0: 
+        
+            wavelength_now = float(self.laser_313_wavelength) * 10**-9
+            wavelength_target = float(self.laser_313_wavelength_target) * 10**-9
+            
+            alpha = float(self.laser_313_lock_alpha)
+            beta = float(self.laser_313_lock_beta)
+            
+            
+            
+            wavelength_error = (wavelength_now-wavelength_target)
+            
+            print(wavelength_error)
+            
+            prop_corr = -alpha*wavelength_error
+            
+            print(prop_corr)
+            
+            int_corr = self.I_n 
+            
+            corr = prop_corr + int_corr
+            
+            print('corr='+ str(corr))
+#            
+#            self.apply_313_piezo_get_voltage()
+#            
+#            volt_now = float(self.laser_313_piezo_voltage_measured)
+            
+            
+            
+#            volt_new = volt_now 
+            
+            time.sleep(0.1)
+            
+#            self.apply_313_piezo_set_voltage(corr)
+            
+            
+            
+            
+            
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+
+
+
+
+
+    def lock_313_f(self):
+        
+        while self.breaker_313_lock == 0: 
+    
+            frequency_now = float(self.laser_313_frequency)
+            frequency_target = float(self.laser_313_frequency_target)
+           
+            
+            
+            alpha = float(self.laser_313_lock_alpha)
+            beta = float(self.laser_313_lock_beta)
+            
+            
+            
+            frequency_error = (frequency_now-frequency_target)
+            
+            print(frequency_error)
+            
+            prop_corr = 1000*alpha*frequency_error
+            
+            print(prop_corr)
+            
+        
+            self.I_n += 100*beta*frequency_error
+            
+            int_corr = self.I_n
+            
+            print(int_corr)
+            
+            corr = prop_corr + int_corr
+            
+            print('corr='+ str(corr))
+            
+#            self.apply_313_piezo_get_voltage()
+#            
+#            volt_now = float(self.laser_313_piezo_voltage_measured)
+            
+            
+            
+#            volt_new = volt_now 
+            
+            time.sleep(0.1)
+            
+            self.apply_313_piezo_set_voltage(corr)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
 
 

@@ -500,6 +500,18 @@ class window(Ui_XCon):
 
         #---------------- PLOT for function: 313 laser change ---------------------------------------------#
 
+
+        # grid for the plot of the frequency monitoring
+        self.plot_313_frequency = pg.PlotWidget(name='Plot313frequ')  ## giving the plots names allows us to link their axes together
+        self.plot_313_frequency.setBackground(background=brush_background)
+        self.plot_313_frequency.setLabel('left', 'frequency', units='THz', **labelStyle_l)
+        self.plot_313_frequency.setLabel('bottom', 'time', units='seconds', **labelStyle_l)        
+        self.plot_313_frequency.showGrid(x=True,y=True)
+        self.verticalLayout_313_frequ.addWidget(self.plot_313_frequency)
+        #--------------------------------------------------------------------------------------------------# 
+        
+        
+
         # grid for the plot of the 313nm cooling laser change AOM
         self.plot_313_aom_change = pg.PlotWidget(name='Plot313AOMChange')  ## giving the plots names allows us to link their axes together
         self.plot_313_aom_change.setBackground(background=brush_background)
@@ -520,7 +532,8 @@ class window(Ui_XCon):
         self.verticalLayout_313_piezo_change.addWidget(self.plot_313_change)
         #--------------------------------------------------------------------------------------------------#
 
-
+        self.pushButton_lock_on.clicked.connect(self.lock_313_on)
+        self.pushButton_lock_off.clicked.connect(self.lock_313_off)
 
         self.pushButton_313_aom_apply.clicked.connect(self.read_para_aom_volt_from_gui_into_instance)
         self.pushButton_313_aom_apply.clicked.connect(self.apply_para_aom_volt_on_device) 
@@ -588,6 +601,15 @@ class window(Ui_XCon):
         self.timer_t_dependent_plots_II.setTimerType(QtCore.Qt.PreciseTimer)
         self.timer_t_dependent_plots_II.timeout.connect(self.t_dependent_plot_updates_II)
         self.timer_t_dependent_plots_II.start()
+        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+
+        #++ timer for the update of all plots II  - sequence 01 monitoring ++++++++++++++++++++++++++++++++#   
+        self.timer_t_dependent_plots_III = QtCore.QTimer()
+        self.timer_t_dependent_plots_III.setInterval(100)
+        self.timer_t_dependent_plots_III.setTimerType(QtCore.Qt.PreciseTimer)
+        self.timer_t_dependent_plots_III.timeout.connect(self.t_dependent_plot_updates_III)
+        self.timer_t_dependent_plots_III.start()
         #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
         
         
@@ -1350,6 +1372,47 @@ class window(Ui_XCon):
     #~~ 313 LASER TAB ~ 313 LASER TAB ~ 313 LASER TAB ~ 313 LASER TAB ~ 313 LASER TAB ~~~~~~~~~~~~~#
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#    
 
+#    def lock_313_on(self):
+#        the_program.breaker_313_lock = 0
+#        the_program.laser_313_lock_alpha = self.doubleSpinBox_313_lock_alpha.value()
+#        the_program.laser_313_lock_beta = self.doubleSpinBox_313_lock_beta.value()
+#        the_program.laser_313_wavelength_target = self.doubleSpinBox_313_lock_target_wavelength.value()
+#        
+#        the_program.apply_313_piezo_get_voltage()
+#            
+#        volt_now = float(the_program.laser_313_piezo_voltage_measured)
+#        
+#        the_program.I_n = volt_now
+#        print(volt_now)
+#
+#        thread_lock = threading.Thread(target=the_program.lock_313)
+#        thread_lock.start()
+
+
+    def lock_313_on(self):
+        the_program.breaker_313_lock = 0
+        the_program.laser_313_lock_alpha = self.doubleSpinBox_313_lock_alpha.value()
+        the_program.laser_313_lock_beta = self.doubleSpinBox_313_lock_beta.value()
+        the_program.laser_313_frequency_target = self.doubleSpinBox_313_lock_target_frequency.value()
+        
+        the_program.apply_313_piezo_get_voltage()
+            
+        volt_now = float(the_program.laser_313_piezo_voltage_measured)
+        
+        the_program.I_n = volt_now
+        print(volt_now)
+
+        thread_lock = threading.Thread(target=the_program.lock_313_f)
+        thread_lock.start()
+             
+        
+
+    def lock_313_off(self):
+        the_program.breaker_313_lock = 1
+
+
+
+
     #~~ aom voltage ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     def read_para_aom_volt_from_gui_into_instance(self):
         the_program.laser_313_aom_voltage = self.doubleSpinBox_313_aom.value()
@@ -1372,8 +1435,6 @@ class window(Ui_XCon):
         self.doubleSpinBox_313_ttl.setValue(0.0)
         the_program.laser_313_aom_ttl = float(0.0)
         
-        
-        
     #~~ aom piezo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     def read_para_313_piezo_from_gui_into_instance(self):
         the_program.laser_313_piezo_voltage = self.doubleSpinBox_313_piezo.value()
@@ -1385,7 +1446,6 @@ class window(Ui_XCon):
         self.doubleSpinBox_313_piezo.setValue(0.0)
         the_program.laser_313_piezo_voltage = float(0.0) 
  
-
     # read sequence parameters for 313 change AOM 
     def read_para_313_aom_change(self):
         the_program.laser_313_aom_u_start = self.doubleSpinBox_313_aom_u_start.value()
@@ -1407,8 +1467,6 @@ class window(Ui_XCon):
 
     def abort_313_aom_sweep(self):        
         the_program.breaker_change_fiber_aom = 1
-
-
 
     # read sequence parameters for 313 change
     def read_para_313_change(self):
@@ -1563,6 +1621,11 @@ class window(Ui_XCon):
         
         self.label_laser_313_aom_voltage.setText(str("{0:.2f}".format(the_program.laser_313_aom_voltage)))
         self.label_laser_313_piezo_voltage.setText(str("{0:.2f}".format(float(the_program.laser_313_piezo_voltage_measured))))
+        
+        
+
+        
+        
         #~~ COOLING LASER CHANGE AOM plots ~~~~~~~~~~~#
         x_values_fiber_aom_time = [0]
         y_values_fiber_aom_volts = []
@@ -1676,8 +1739,13 @@ class window(Ui_XCon):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
         
         
+    #~~ this FUNCTION does all monitoring for the seq 01 tab ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#        
+    def t_dependent_plot_updates_III(self):    
         
-        
+        self.plotted_313_frequency = self.plot_313_frequency.plot(the_program.laser_313_time_diff,the_program.laser_313_frequency_monitoring, pen=bluePen, symbol='o', symbolBrush = brush_blue, name = 'pressure', clear = True)
+        the_program.laser_313_lock_alpha = float(self.doubleSpinBox_313_lock_alpha.value())
+        the_program.laser_313_lock_beta = float(self.doubleSpinBox_313_lock_beta.value())
+        the_program.laser_313_frequency_target = float(self.doubleSpinBox_313_lock_target_frequency.value())
         
         
         
